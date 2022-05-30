@@ -9,7 +9,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const url = "https://charm.sh/"
+// const url = "https://charm.sh/"
+const url = "https://yuta519.github.io/"
 
 type model struct {
 	status int
