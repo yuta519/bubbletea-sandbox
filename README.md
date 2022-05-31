@@ -7,5 +7,8 @@
 
 ## How to use
 - init
+  - Run when initial cmd using
 - update
+  - Update state which you define in app
 - view
+  - Show a text or form as cli
