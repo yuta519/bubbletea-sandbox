@@ -23,8 +23,10 @@ func main() {
 	anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
 	api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
 
-	v := url.Values{}
-	v.Set("screen_name", "LoveLive_staff")
-
-	showTimeLine(api, v)
+	var userNameArg string
+	fmt.Println("Please input twitter user")
+	fmt.Scan(&userNameArg)
+	values := url.Values{}
+	values.Set("screen_name", userNameArg)
+	showTimeLine(api, values)
 }
