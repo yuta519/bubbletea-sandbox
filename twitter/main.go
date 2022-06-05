@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/ChimeraCoder/anaconda"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type model struct {
@@ -21,6 +22,11 @@ func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
 	for _, tweet := range tweets {
 		fmt.Println("tweet: ", tweet.Text)
 	}
+}
+
+func (m model) Init() tea.Cmd {
+	// Just return `nil`, which means "no I/O right now, please."
+	return nil
 }
 
 // func (m model) Init() tea.Cmd
