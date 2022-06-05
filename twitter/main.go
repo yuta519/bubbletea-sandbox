@@ -8,6 +8,11 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 )
 
+type model struct {
+	status int
+	err    error
+}
+
 func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
 	tweets, err := api.GetUserTimeline(v)
 	if err != nil {
@@ -17,6 +22,9 @@ func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
 		fmt.Println("tweet: ", tweet.Text)
 	}
 }
+
+// func (m model) Init() tea.Cmd
+// func (m model) Update(tea.Model, tea.Cmd)
 
 func main() {
 	anaconda.SetConsumerKey(os.Getenv("API_KEY"))
