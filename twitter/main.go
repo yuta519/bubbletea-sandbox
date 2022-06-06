@@ -10,8 +10,11 @@ import (
 )
 
 type model struct {
-	status int
-	err    error
+	status   int
+	err      error
+	choices  []string
+	cursor   int
+	selected map[int]struct{}
 }
 
 func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
@@ -21,6 +24,18 @@ func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
 	}
 	for _, tweet := range tweets {
 		fmt.Println("tweet: ", tweet.Text)
+	}
+}
+
+func initialModel() model {
+	return model{
+		// Our shopping list is a grocery list
+		choices: []string{"golangch", "GolangTrends", "golang_news"},
+
+		// A map which indicates which choices are selected. We're using
+		// the  map like a mathematical set. The keys refer to the indexes
+		// of the `choices` slice, above.
+		selected: make(map[int]struct{}),
 	}
 }
 
