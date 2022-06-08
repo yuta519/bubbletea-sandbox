@@ -12,6 +12,7 @@ import (
 type model struct {
 	status   int
 	err      error
+	choice   int
 	choices  []string
 	cursor   int
 	selected map[int]struct{}
@@ -88,7 +89,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	if m.quitting {
-		return "See you!!"
+		return choicesView(m)
 	}
 
 	// The header
@@ -118,6 +119,26 @@ func (m model) View() string {
 
 	// Send the UI for rendering
 	return s
+}
+
+func checkbox(label string, checked bool) string {
+	if checked {
+		return fmt.Sprint("[x] "+label, "212")
+	}
+	return fmt.Sprintf("[ ] %s", label)
+}
+
+func choicesView(m model) string {
+	c := m.choice
+	choices := fmt.Sprintf(
+		"%s\n%s\n%s\n%s",
+		checkbox("Plant carrots", c == 0),
+		checkbox("Go to the market", c == 1),
+		checkbox("Read something", c == 2),
+		checkbox("See friends", c == 3),
+	)
+
+	return fmt.Sprintf(choices)
 }
 
 func main() {
