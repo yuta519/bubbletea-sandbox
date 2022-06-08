@@ -10,13 +10,14 @@ import (
 )
 
 type model struct {
-	status   int
-	err      error
 	choice   int
+	chosen   bool
 	choices  []string
 	cursor   int
 	selected map[int]struct{}
 	quitting bool
+	status   int
+	err      error
 }
 
 func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
