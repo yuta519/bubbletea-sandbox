@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/ChimeraCoder/anaconda"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -15,31 +16,44 @@ type model struct {
 	isChosen     bool
 	cursor       int
 	selected     map[int]struct{}
-	isFreeFormat bool
-	quitting     bool
+	isTextFormat bool
+	textInput    textinput.Model
 	status       int
 	err          error
 }
 
-func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
-	tweets, err := api.GetUserTimeline(v)
-	if err != nil {
-		panic(err)
+func main() {
+	p := tea.NewProgram(initialModel())
+	if err := p.Start(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
 	}
-	for _, tweet := range tweets {
-		fmt.Println("tweet: ", tweet.Text)
-	}
+
+	anaconda.SetConsumerKey(os.Getenv("API_KEY"))
+	anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
+	api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
+
+	var userNameArg string
+	fmt.Println("Please input twitter user")
+	fmt.Scan(&userNameArg)
+	values := url.Values{}
+	values.Set("screen_name", userNameArg)
+	showTimeLine(api, values)
 }
 
 func initialModel() model {
+	ti := textinput.New()
+	ti.Placeholder = "Pikachu"
+	ti.Focus()
+	ti.CharLimit = 156
+	ti.Width = 20
+
 	return model{
-		// Twitter accounts to check tweets
-		accounts: []string{"golangch", "GolangTrends", "golang_news"},
-		isChosen: false,
-		// A map which indicates which choices are selected. We're using
-		// the  map like a mathematical set. The keys refer to the indexes
-		// of the `choices` slice, above.
-		selected: make(map[int]struct{}),
+		accounts:     []string{"golangch", "GolangTrends", "golang_news"},
+		isChosen:     false,
+		isTextFormat: false,
+		textInput:    ti,
+		selected:     make(map[int]struct{}),
 	}
 }
 
@@ -49,6 +63,7 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	// Is it a key press?
 	case tea.KeyMsg:
@@ -56,7 +71,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		// These keys should exit the program.
 		case "ctrl+c", "q":
-			m.quitting = true
 			return m, tea.Quit
 		// The "up" and "k" keys move the cursor up
 		case "up", "k":
@@ -69,7 +83,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 		case "f":
-			return m, tea.Quit
+			m.isTextFormat = true
+			return m, nil
 		// The "enter" key and the spacebar (a literal space) toggle
 		// the selected state for the item that the cursor is pointing at.
 		case "enter", " ":
@@ -80,15 +95,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selected[m.cursor] = struct{}{}
 			}
 		}
+		switch msg.Type {
+		case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+			return m, tea.Quit
+		}
+		m.textInput, cmd = m.textInput.Update(msg)
 	}
 	// Return the updated model to the Bubble Tea runtime for processing.
 	// Note that we're not returning a command.
-	return m, nil
+	return m, cmd
 }
 
 func (m model) View() string {
-	if m.quitting {
-		return choicesView(m)
+	if m.isTextFormat {
+		return textInputView(m)
 	}
 
 	// The header
@@ -134,8 +154,8 @@ func choicesView(m model) string {
 		checkbox("Read something", c == 2),
 		checkbox("See friends", c == 3),
 	)
-
-	return fmt.Sprintf(choices)
+	footer := "\nOr you could input a twitter account with free text when press f.\n"
+	return fmt.Sprintf("%s\n%s\n", choices, footer)
 }
 
 func checkbox(label string, checked bool) string {
@@ -145,21 +165,20 @@ func checkbox(label string, checked bool) string {
 	return fmt.Sprintf("[ ] %s", label)
 }
 
-func main() {
-	p := tea.NewProgram(initialModel())
-	if err := p.Start(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
+func textInputView(m model) string {
+	return fmt.Sprintf(
+		"What’s your favorite Pokémon?\n\n%s\n\n%s",
+		m.textInput.View(),
+		"(esc to quit)",
+	) + "\n"
+}
+
+func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
+	tweets, err := api.GetUserTimeline(v)
+	if err != nil {
+		panic(err)
 	}
-
-	anaconda.SetConsumerKey(os.Getenv("API_KEY"))
-	anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
-	api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
-
-	var userNameArg string
-	fmt.Println("Please input twitter user")
-	fmt.Scan(&userNameArg)
-	values := url.Values{}
-	values.Set("screen_name", userNameArg)
-	showTimeLine(api, values)
+	for _, tweet := range tweets {
+		fmt.Println("tweet: ", tweet.Text)
+	}
 }
