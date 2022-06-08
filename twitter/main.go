@@ -15,6 +15,7 @@ type model struct {
 	choices  []string
 	cursor   int
 	selected map[int]struct{}
+	quitting bool
 }
 
 func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
@@ -86,6 +87,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
+	if m.quitting {
+		return "See you!!"
+	}
+
 	// The header
 	s := "What should we buy at the market?\n\n"
 
