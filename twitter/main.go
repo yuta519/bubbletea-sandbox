@@ -10,14 +10,15 @@ import (
 )
 
 type model struct {
-	choice   int
-	chosen   bool
-	choices  []string
-	cursor   int
-	selected map[int]struct{}
-	quitting bool
-	status   int
-	err      error
+	accounts     []string
+	choice       int
+	isChosen     bool
+	cursor       int
+	selected     map[int]struct{}
+	isFreeFormat bool
+	quitting     bool
+	status       int
+	err          error
 }
 
 func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
@@ -32,9 +33,9 @@ func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
 
 func initialModel() model {
 	return model{
-		// Our shopping list is a grocery list
-		choices: []string{"golangch", "GolangTrends", "golang_news"},
-
+		// Twitter accounts to check tweets
+		accounts: []string{"golangch", "GolangTrends", "golang_news"},
+		isChosen: false,
 		// A map which indicates which choices are selected. We're using
 		// the  map like a mathematical set. The keys refer to the indexes
 		// of the `choices` slice, above.
@@ -49,29 +50,26 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
 	// Is it a key press?
 	case tea.KeyMsg:
-
 		// Cool, what was the actual key pressed?
 		switch msg.String() {
-
 		// These keys should exit the program.
 		case "ctrl+c", "q":
+			m.quitting = true
 			return m, tea.Quit
-
 		// The "up" and "k" keys move the cursor up
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
 			}
-
 		// The "down" and "j" keys move the cursor down
 		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
+			if m.cursor < len(m.accounts)-1 {
 				m.cursor++
 			}
-
+		case "f":
+			return m, tea.Quit
 		// The "enter" key and the spacebar (a literal space) toggle
 		// the selected state for the item that the cursor is pointing at.
 		case "enter", " ":
@@ -94,10 +92,14 @@ func (m model) View() string {
 	}
 
 	// The header
-	s := "What should we buy at the market?\n\n"
+	s := "Choose a twitter account you want check.\n\n"
+
+	if m.isChosen {
+		return choicesView(m)
+	}
 
 	// Iterate over our choices
-	for i, choice := range m.choices {
+	for i, choice := range m.accounts {
 
 		// Is the cursor pointing at this choice?
 		cursor := " " // no cursor
@@ -115,18 +117,12 @@ func (m model) View() string {
 		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
 	}
 
+	s += "\nOr you could input a twitter account with free text when press f.\n"
 	// The footer
 	s += "\nPress q to quit.\n"
 
 	// Send the UI for rendering
 	return s
-}
-
-func checkbox(label string, checked bool) string {
-	if checked {
-		return fmt.Sprint("[x] "+label, "212")
-	}
-	return fmt.Sprintf("[ ] %s", label)
 }
 
 func choicesView(m model) string {
@@ -142,12 +138,20 @@ func choicesView(m model) string {
 	return fmt.Sprintf(choices)
 }
 
+func checkbox(label string, checked bool) string {
+	if checked {
+		return fmt.Sprint("[x] "+label, "212")
+	}
+	return fmt.Sprintf("[ ] %s", label)
+}
+
 func main() {
 	p := tea.NewProgram(initialModel())
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+
 	anaconda.SetConsumerKey(os.Getenv("API_KEY"))
 	anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
 	api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
