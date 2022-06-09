@@ -33,8 +33,8 @@ func main() {
 	anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
 	api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
 
-	var userNameArg string
 	fmt.Println("Please input twitter user")
+	var userNameArg string
 	fmt.Scan(&userNameArg)
 	values := url.Values{}
 	values.Set("screen_name", userNameArg)
@@ -102,7 +102,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.textInput, cmd = m.textInput.Update(msg)
 	}
 	// Return the updated model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
 	return m, cmd
 }
 
