@@ -162,7 +162,7 @@ func checkbox(label string, checked bool) string {
 
 func textInputView(m model) string {
 	return fmt.Sprintf(
-		"What’s your favorite Pokémon?\n\n%s\n\n%s",
+		"What’s the twitter account you want know?\n\n%s\n\n%s",
 		m.textInput.View(),
 		"(esc to quit)",
 	) + "\n"
