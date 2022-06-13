@@ -35,7 +35,7 @@ func initialModel() model {
 	ti := textinput.New()
 	ti.Placeholder = "Pikachu"
 	ti.Focus()
-	ti.CharLimit = 256
+	ti.CharLimit = 156
 	ti.Width = 20
 
 	return model{
@@ -76,11 +76,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter", " ":
 			_, ok := m.selected[m.cursor]
 			if ok {
+				fmt.Print(m.accounts[m.cursor])
 				delete(m.selected, m.cursor)
 			} else {
 				m.selected[m.cursor] = struct{}{}
 			}
-			if m.textInput.Value() != "" {
+			if m.isChosen {
+				fmt.Print(m.accounts[m.cursor])
+			}
+			if m.isTextFormat {
 				anaconda.SetConsumerKey(os.Getenv("API_KEY"))
 				anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
 				api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
