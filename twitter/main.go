@@ -30,16 +30,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	anaconda.SetConsumerKey(os.Getenv("API_KEY"))
-	anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
-	api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
+	// anaconda.SetConsumerKey(os.Getenv("API_KEY"))
+	// anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
+	// api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
 
-	fmt.Println("Please input twitter user")
-	var userNameArg string
-	fmt.Scan(&userNameArg)
-	values := url.Values{}
-	values.Set("screen_name", userNameArg)
-	showTimeLine(api, values)
+	// fmt.Println("Please input twitter user")
+	// var userNameArg string
+	// fmt.Scan(&userNameArg)
+	// values := url.Values{}
+	// values.Set("screen_name", userNameArg)
+	// showTimeLine(api, values)
 }
 
 func initialModel() model {
@@ -90,6 +90,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				delete(m.selected, m.cursor)
 			} else {
 				m.selected[m.cursor] = struct{}{}
+			}
+			if m.textInput.Value() != "" {
+				anaconda.SetConsumerKey(os.Getenv("API_KEY"))
+				anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
+				api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
+
+				values := url.Values{}
+				values.Set("screen_name", m.textInput.Value())
+				m.fetchTweetsByAccount(api, values)
 			}
 		}
 		switch msg.Type {
@@ -173,6 +182,10 @@ func (m model) fetchTweetsByAccount(api *anaconda.TwitterApi, v url.Values) tea.
 	tweets, err := api.GetUserTimeline(v)
 	if err != nil {
 		panic(err)
+	}
+	// fmt.Print("Twitter Account -> ", v)
+	for _, tweet := range tweets {
+		fmt.Println("tweet: ", tweet.Text)
 	}
 	return model{tweets: tweets}
 }
