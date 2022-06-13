@@ -18,6 +18,7 @@ type model struct {
 	selected     map[int]struct{}
 	isTextFormat bool
 	textInput    textinput.Model
+	tweets       []anaconda.Tweet
 	status       int
 	err          error
 }
@@ -166,6 +167,14 @@ func textInputView(m model) string {
 		m.textInput.View(),
 		"(esc to quit)",
 	) + "\n"
+}
+
+func (m model) fetchTweetsByAccount(api *anaconda.TwitterApi, v url.Values) tea.Msg {
+	tweets, err := api.GetUserTimeline(v)
+	if err != nil {
+		panic(err)
+	}
+	return model{tweets: tweets}
 }
 
 func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
