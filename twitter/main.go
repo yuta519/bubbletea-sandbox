@@ -29,24 +29,13 @@ func main() {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
-
-	// anaconda.SetConsumerKey(os.Getenv("API_KEY"))
-	// anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
-	// api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
-
-	// fmt.Println("Please input twitter user")
-	// var userNameArg string
-	// fmt.Scan(&userNameArg)
-	// values := url.Values{}
-	// values.Set("screen_name", userNameArg)
-	// showTimeLine(api, values)
 }
 
 func initialModel() model {
 	ti := textinput.New()
 	ti.Placeholder = "Pikachu"
 	ti.Focus()
-	ti.CharLimit = 156
+	ti.CharLimit = 256
 	ti.Width = 20
 
 	return model{
@@ -81,7 +70,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.accounts)-1 {
 				m.cursor++
 			}
-		case "f":
+		case "!":
 			m.isTextFormat = true
 			return m, nil
 		case "enter", " ":
@@ -142,7 +131,7 @@ func (m model) View() string {
 		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
 	}
 
-	s += "\nOr you could input a twitter account with free text when press f.\n"
+	s += "\nOr you could input a twitter account with free text when press `!`.\n"
 	// The footer
 	s += "\nPress q to quit.\n"
 
