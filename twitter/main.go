@@ -57,9 +57,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
-		// Cool, what was the actual key pressed?
+		// The actual key pressed
 		switch msg.String() {
-
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case "up", "k":
@@ -83,15 +82,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.isChosen = true
 			}
 		case "enter":
+			anaconda.SetConsumerKey(os.Getenv("API_KEY"))
+			anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
+			api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
+			values := url.Values{}
+
 			if m.isChosen {
 				fmt.Println(m.accounts[m.cursor])
+				values.Set("screen_name", m.accounts[m.cursor])
+				m.fetchTweetsByAccount(api, values)
 			}
 			if m.isTextFormat {
-				anaconda.SetConsumerKey(os.Getenv("API_KEY"))
-				anaconda.SetConsumerSecret(os.Getenv("API_SECRET"))
-				api := anaconda.NewTwitterApi(os.Getenv("ACCESS_KEY"), os.Getenv("ACCESS_SECRET"))
-
-				values := url.Values{}
 				values.Set("screen_name", m.textInput.Value())
 				m.fetchTweetsByAccount(api, values)
 			}
