@@ -73,16 +73,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "!":
 			m.isTextFormat = true
 			return m, nil
-		case "enter", " ":
+		case " ":
 			_, ok := m.selected[m.cursor]
 			if ok {
-				fmt.Print(m.accounts[m.cursor])
 				delete(m.selected, m.cursor)
+				m.isChosen = false
 			} else {
 				m.selected[m.cursor] = struct{}{}
+				m.isChosen = true
 			}
+		case "enter":
 			if m.isChosen {
-				fmt.Print(m.accounts[m.cursor])
+				fmt.Println(m.accounts[m.cursor])
 			}
 			if m.isTextFormat {
 				anaconda.SetConsumerKey(os.Getenv("API_KEY"))
@@ -111,9 +113,9 @@ func (m model) View() string {
 	// The header
 	s := "Choose a twitter account you want check.\n\n"
 
-	if m.isChosen {
-		return choicesView(m)
-	}
+	// if m.isChosen {
+	// 	return choicesView(m)
+	// }
 	// Iterate over our choices
 	for i, choice := range m.accounts {
 		// Is the cursor pointing at this choice?
