@@ -111,12 +111,12 @@ func (m model) View() string {
 	if m.isTextFormat {
 		return textInputView(m)
 	}
+	return choicesView(m)
+}
+
+func choicesView(m model) string {
 	// The header
 	s := "Choose a twitter account you want check.\n\n"
-
-	// if m.isChosen {
-	// 	return choicesView(m)
-	// }
 	// Iterate over our choices
 	for i, choice := range m.accounts {
 		// Is the cursor pointing at this choice?
@@ -132,31 +132,11 @@ func (m model) View() string {
 		// Render the row
 		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
 	}
-	s += "\nOr you could input a twitter account with free text when press `!`.\n"
 	// The footer
+	s += "\nOr you could input a twitter account with free text when press `!`.\n"
 	s += "\nPress q to quit.\n"
 	// Send the UI for rendering
 	return s
-}
-
-func choicesView(m model) string {
-	c := m.choice
-	choices := fmt.Sprintf(
-		"%s\n%s\n%s\n%s",
-		checkbox("Plant carrots", c == 0),
-		checkbox("Go to the market", c == 1),
-		checkbox("Read something", c == 2),
-		checkbox("See friends", c == 3),
-	)
-	footer := "\nOr you could input a twitter account with free text when press f.\n"
-	return fmt.Sprintf("%s\n%s\n", choices, footer)
-}
-
-func checkbox(label string, checked bool) string {
-	if checked {
-		return fmt.Sprint("[x] "+label, "212")
-	}
-	return fmt.Sprintf("[ ] %s", label)
 }
 
 func textInputView(m model) string {
@@ -172,19 +152,8 @@ func (m model) fetchTweetsByAccount(api *anaconda.TwitterApi, v url.Values) tea.
 	if err != nil {
 		panic(err)
 	}
-	// fmt.Print("Twitter Account -> ", v)
 	for _, tweet := range tweets {
 		fmt.Println("tweet: ", tweet.Text)
 	}
 	return model{tweets: tweets}
-}
-
-func showTimeLine(api *anaconda.TwitterApi, v url.Values) {
-	tweets, err := api.GetUserTimeline(v)
-	if err != nil {
-		panic(err)
-	}
-	for _, tweet := range tweets {
-		fmt.Println("tweet: ", tweet.Text)
-	}
 }
